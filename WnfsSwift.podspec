@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "WnfsSwift"
-  spec.version      = "0.1.0"
+  spec.version      = "0.1.6"
   spec.summary      = "A wrapper around the WNFS swift bindings."
 
   # This description is used to generate tags and improve search results.
@@ -80,7 +80,7 @@ Pod::Spec.new do |spec|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  spec.source = { :git => "https://github.com/functionland/wnfs-swift-package.git", :tag => "#{spec.version}" }
+  spec.source = { :git => "https://github.com/functionland/wnfs-swift-package.git", :tag => "v#{spec.version}" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #

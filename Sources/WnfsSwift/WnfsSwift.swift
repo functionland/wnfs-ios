@@ -6,7 +6,7 @@
 //
 import Foundation
 import WnfsBindings
-import CryptoKit
+import CommonCrypto
 
 private class WrapClosure<G, P> {
     fileprivate let get_closure: G
