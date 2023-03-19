@@ -27,8 +27,8 @@ let package = Package(
                 name: "WnfsBindings",
                 // You can use local path for faster development
                 // path: "../build/WnfsBindings.xcframework"),
-                url: "https://github.com/hhio618/wnfs-build-xcframework/raw/main/bundle.zip",
-                checksum: "018bc7fb2ee3218beb5a0c89c880d33552887426537a3c352b9faf7642aa6f9f"),
+                url: "https://github.com/functionland/wnfs-swift-bindings/releases/download/v0.1.2/swift-bundle.zip",
+                checksum: "47c48b73eb614fc4643f9fbc35d12d990e954dc3ac3a86e6480c85ce374a6987"),
            
             .testTarget(
                 name: "WnfsSwiftTests",

@@ -17,6 +17,14 @@ private class WrapClosure<G, P> {
     }
 }
 
+func sha256(data : Data) -> Data {
+    var hash = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
+    data.withUnsafeBytes {
+        _ = CC_SHA256($0.baseAddress, CC_LONG(data.count), &hash)
+    }
+    return Data(hash)
+}
+
 func toData(ptr: UnsafePointer<UInt8>?, size: UnsafePointer<Int>?) -> Data? {
     // This will clone input c bytes to a swift Data class.
     guard let count = size else {
@@ -112,7 +120,7 @@ public class WnfsWrapper {
     
     private func createRootDir(cid: String, wnfsKey: String) throws -> WnfsConfig {
         let msg = wnfsKey.data(using: .utf8)!
-        let hashed = SHA256.hash(data: msg)
+        let hashed = sha256(data: msg)
         var wnfs_key_ptr: UnsafePointer<UInt8>?
         var wnfs_key_size: Int?
         hashed.withUnsafeBytes { (unsafeBytes) in
