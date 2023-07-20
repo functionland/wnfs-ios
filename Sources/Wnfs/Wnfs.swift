@@ -34,43 +34,45 @@ func toData(ptr: UnsafePointer<UInt8>?, size: UnsafePointer<Int>?) -> Data? {
     return Data(buffer: buffer)
 }
 
-public class WnfsConfig{
-    private var cid: String
-    private var privateRef: String
-    public init(cid: String, privateRef: String) {
-        self.cid = cid
-        self.privateRef = privateRef
+public class WnfsRustResult<T>{
+    private var _ok: Bool
+    private var _error: String?
+    private var _result: T
+    public init(ok: Bool, error: String?, result: T) {
+        self._ok = ok
+        self._error = error
+        self._result = result
     }
     
-    public func getCid()  -> String {
-        return self.cid
+    public func ok() -> Bool {
+        return self._ok
     }
     
-    public func getPrivateRef() -> String{
-        return self.privateRef
+    public func error() -> String?{
+        return self._error
     }
     
-    public func Update(newConfig: WnfsConfig){
-        self.cid = newConfig.cid
-        self.privateRef = newConfig.privateRef
+    public func getResult()  -> T {
+        return self._result
     }
 }
 
 enum MyError: Error {
     case runtimeError(String)
 }
-public class WnfsWrapper {
+public class Wnfs {
     var blockStoreInterface: BlockStoreInterface
-    public init(putFn: @escaping ((_ data: Data?, _ codec: Int64) -> Data?), getFn: @escaping ((_ cid: Data?) -> Data?)) {
+    public init(putFn: @escaping ((_cid: Data, _ data: Data) throws -> Void), getFn: @escaping ((_ cid: Data) throws -> Data)) {
         // step 1
         let wrappedClosure = WrapClosure(get_closure: getFn, put_closure: putFn)
         let userdata = Unmanaged.passRetained(wrappedClosure).toOpaque()
         
         // step 2
-        let cPutFn: @convention(c) (UnsafeMutableRawPointer?, UnsafePointer<UInt8>?, UnsafePointer<Int>?, Int64) -> UnsafePointer<SwiftData>? = { (_ userdata: UnsafeMutableRawPointer?, _ bytes: UnsafePointer<UInt8>?, _ bytes_size: UnsafePointer<Int>?, _ codec: Int64) -> UnsafePointer<SwiftData>? in
+        let cPutFn: @convention(c) (UnsafeMutableRawPointer?, UnsafePointer<UInt8>?, UnsafePointer<Int>?, Int64) -> UnsafePointer<SwiftData>? = { (_ userdata: UnsafeMutableRawPointer?, _ cid: UnsafePointer<UInt8>?, _ cid_size: UnsafePointer<Int>?, _ bytes: UnsafePointer<UInt8>?, _ bytes_size: UnsafePointer<Int>?) -> UnsafePointer<SwiftData>? in
             let wrappedClosure: WrapClosure< (_ cid: Data?) -> Data? , (_ data: Data?, _ codec: Int64) -> Data?> = Unmanaged.fromOpaque(userdata!).takeUnretainedValue()
             let bts = toData(ptr: bytes, size: bytes_size)
-            guard let cid = wrappedClosure.put_closure(bts, codec) else{
+            let cid = toData(ptr: cid, size: cid_size)
+            guard let wrappedClosure.put_closure(cid, bts) else{
                 return nil
             }
             let ptr = UnsafeMutablePointer<UInt8>.allocate(capacity: cid.count)

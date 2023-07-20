@@ -2,36 +2,31 @@
 import PackageDescription
 import Foundation
 let package = Package(
-        name: "WnfsSwift",
+        name: "Wnfs",
         platforms: [
-            .iOS(.v8), 
-            .macOS(.v11)
+            .iOS(.v13), 
         ],
         products: [
             .library(
-                name: "WnfsSwift",
-                targets: ["WnfsSwift"]),
+                name: "Wnfs",
+                targets: ["Wnfs"]),
             .library(
                 name: "WnfsBindings",
                 targets: ["WnfsBindings"]),
         ],
-        dependencies: [
-            // Dependencies declare other packages that this package depends on.
-            .package(url: "https://github.com/swift-libp2p/swift-cid.git", .upToNextMajor(from: "0.0.1")),
-        ],
         targets: [
             .target(
-                name: "WnfsSwift",
-                dependencies: ["WnfsBindings", .product(name: "CID", package: "swift-cid"),]),
+                name: "Wnfs",
+                dependencies: ["WnfsBindings",]),
             .binaryTarget(
                 name: "WnfsBindings",
-                // You can use local path for faster development
-                // path: "../build/WnfsBindings.xcframework"),
-                url: "https://github.com/functionland/wnfs-swift-bindings/releases/download/v0.1.2/swift-bundle.zip",
-                checksum: "47c48b73eb614fc4643f9fbc35d12d990e954dc3ac3a86e6480c85ce374a6987"),
+//                 You can use local path for faster development
+                 path: "../wnfs-ios-bindings/build/WnfsBindings.xcframework"),
+//                url: "https://github.com/functionland/wnfs-ios-bindings/releases/download/v0.1.6/swift-bundle.zip",
+//                checksum: "07cd3d130a0db69a054fa631059c165d2c46c878a8a668044d4f06006eb729fe"),
            
             .testTarget(
-                name: "WnfsSwiftTests",
-                dependencies: ["WnfsSwift"]),
+                name: "WnfsTests",
+                dependencies: ["Wnfs"]),
         ]
 )

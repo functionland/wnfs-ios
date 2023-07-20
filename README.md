@@ -1,5 +1,5 @@
 # Wnfs Swift package
-This is home to the wnfs swift package for the Apple mac/ios devices.
+This is home to the wnfs package for the Apple mac/ios devices.
 ## Requirements
 - An OSX environment
 - Latest Xcode installed

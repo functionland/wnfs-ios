@@ -1,4 +1,4 @@
-name: Swift
+name: Build and test the package
 
 on: [push]
 
