@@ -71,22 +71,20 @@ public class Wnfs {
             let _bts = toData(ptr: bytes.data, size: bytes.len)
             let _cid = toData(ptr: cid.data, size: cid.len)
             var err: UnsafeMutablePointer<CChar>!
-            var ok: Bool = false
+            var ok: Bool = true
             if let cid = _cid , let bts = _bts {
                 do {
                     try wrappedClosure.put_closure(cid, bts)
-                    ok = true
+                    
                 } catch let error {
                     err = strdup(error.localizedDescription)
+                    ok = false
                 }
             }else{
                 err = strdup("put data: cid and/or data is empty")
+                ok = false
             }
-            
-            let swiftData = RustResult_RustVoid(ok: ok, err: RustString(str: err), result: RustVoid())
-            let swiftDataPtr = UnsafeMutablePointer<RustResult_RustVoid>.allocate(capacity: 1)
-            swiftDataPtr.initialize(to: swiftData)
-            return swiftData
+            return RustResult_RustVoid(ok: ok, err: RustString(str: err), result: RustVoid())
         }
         
         // step 3
@@ -94,41 +92,37 @@ public class Wnfs {
             let wrappedClosure: WrapClosure< (_ cid: Data) throws -> Data , (_ cid: Data, _ data: Data) throws -> Data> = Unmanaged.fromOpaque(userdata!).takeUnretainedValue()
             let _cid = toData(ptr: cid.data, size: cid.len)
             var err: UnsafeMutablePointer<CChar>!
-            var ok: Bool = false
+            var ok: Bool = true
             var _result: Data? = nil
             if let cid = _cid {
                 do {
                     _result = try wrappedClosure.get_closure(cid)
-                    ok = true
                 } catch let error {
                     err = strdup(error.localizedDescription)
+                    ok = false
                 }
             }else{
                 err = strdup("get data: cid argument is empty")
+                ok = false
             }
             
-            let result_ptr: UnsafePointer<UInt8>? = nil
+            var result_ptr: UnsafeMutablePointer<UInt8>? = nil
             var result_count: Int = 0
             if let result = _result {
-                let result_ptr = UnsafeMutablePointer<UInt8>.allocate(capacity: result.count)
+                result_ptr = UnsafeMutablePointer<UInt8>.allocate(capacity: result.count)
                 result_count = result.count
-                result.copyBytes(to: result_ptr, count: result.count)
-                ok = true
+                result.copyBytes(to: result_ptr!, count: result.count)
             }else {
                 err = strdup("get data: empty result")
+                ok = false
             }
-            let swiftData = RustResult_RustBytes(ok: ok, err: RustString(str: err), result: RustBytes(data: result_ptr, len: result_count, cap: result_count))
-            let swiftDataPtr = UnsafeMutablePointer<RustResult_RustBytes>.allocate(capacity: 1)
-            swiftDataPtr.initialize(to: swiftData)
-            return swiftData
+            return RustResult_RustBytes(ok: ok, err: RustString(str: err), result: RustBytes(data: result_ptr, len: result_count, cap: result_count))
         }
-        
         let cPutDeallocFn: @convention(c) (RustResult_RustVoid) -> Void = { (_ data: RustResult_RustVoid) in
             if data.err.str != nil{
                 data.err.str.deallocate()
             }
         }
-        
         let cGetDeallocFn: @convention(c) (RustResult_RustBytes) -> Void = { (_ data: RustResult_RustBytes) in
             if data.err.str != nil{
                 data.err.str.deallocate()
@@ -137,7 +131,6 @@ public class Wnfs {
                 data.result.data.deallocate()
             }
         }
-
         self.blockStoreInterface = BlockStoreInterface(userdata: userdata, put_fn: cPutFn, get_fn: cGetFn, dealloc_after_get: cGetDeallocFn, dealloc_after_put: cPutDeallocFn)
     }
     
@@ -165,7 +158,6 @@ public class Wnfs {
         }
         let cCid = makeRustString(from: cid)
         let ptr = load_with_wnfs_key_native(self.blockStoreInterface, RustBytes(data: wnfs_key_ptr, len: wnfs_key_size!, cap: wnfs_key_size!), cCid)
-        
         return try self.consumeRustResult_RustVoid(ptr)
     }
     
@@ -174,7 +166,6 @@ public class Wnfs {
         let content_arr_size: Int? = data.count
         data.copyBytes(to: content_arr_ptr, count: data.count)
         let cCid = makeRustString(from: cid)
-        
         let cRemotePath = makeRustString(from: remotePath)
         let ptr = write_file_native(self.blockStoreInterface, cCid,  cRemotePath, RustBytes(data: content_arr_ptr, len: content_arr_size!, cap: content_arr_size!))
         content_arr_ptr.deallocate()
@@ -183,114 +174,65 @@ public class Wnfs {
     
     public func WriteFileFromPath(cid: Cid, remotePath: String, fileUrl: URL) throws -> Cid  {
         let cCid = makeRustString(from: cid)
-        
         let cRemotePath = makeRustString(from: remotePath)
         let cFilePath = makeRustString(from: fileUrl.path)
         let ptr = write_file_from_path_native(self.blockStoreInterface, cCid,  cRemotePath, cFilePath)
-        
-        
-        
-        
-        
-        
         return try self.consumeRustResult_RustString(ptr)
     }
     
     public func ReadFile(cid: Cid, remotePath: String) throws -> Data? {
         let cCid = makeRustString(from: cid)
-        
         let cRemotePath = makeRustString(from: remotePath)
         let ptr = read_file_native(self.blockStoreInterface, cCid,  cRemotePath)
-        
         let data = try consumeRustResult_RustBytes(ptr)
-        
-        
         return data
     }
     
     public func ReadFileToPath(cid: Cid, remotePath: String, fileUrl: URL) throws -> String? {
         let cCid = makeRustString(from: cid)
-        
         let cRemotePath = makeRustString(from: remotePath)
         let cFilePath = makeRustString(from: fileUrl.path)
-        
-        
         let ptr = read_file_to_path_native(self.blockStoreInterface, cCid,  cRemotePath, cFilePath)
         let fileName = try consumeRustResult_RustString(ptr)
-        
-        
-        
-        
         return fileName
     }
     
     public func ReadFileStreamToPath(cid: Cid, remotePath: String, fileUrl: URL) throws -> String? {
         let cCid = makeRustString(from: cid)
-        
         let cRemotePath = makeRustString(from: remotePath)
         let cFilePath = makeRustString(from: fileUrl.path)
-        
-        
         let ptr = read_filestream_to_path_native(self.blockStoreInterface, cCid,  cRemotePath, cFilePath)
         let fileName = try consumeRustResult_RustString(ptr)
-        
-        
-        
-        
-        
         return fileName
     }
     
     public func MkDir(cid: Cid, remotePath: String) throws -> Cid{
         let cCid = makeRustString(from: cid)
-        
         let cRemotePath = makeRustString(from: remotePath)
         let ptr = mkdir_native(self.blockStoreInterface, cCid,  cRemotePath)
-        
-        
-        
-        
-        
         return try self.consumeRustResult_RustString(ptr)
     }
     
     public func Rm(cid: Cid, remotePath: String) throws -> Cid {
         let cCid = makeRustString(from: cid)
-        
         let cRemotePath = makeRustString(from: remotePath)
         let ptr = rm_native(self.blockStoreInterface, cCid,  cRemotePath)
-        
-        
-        
-        
-        
         return try self.consumeRustResult_RustString(ptr)
     }
     
     public func Cp(cid: Cid, remotePathFrom: String, remotePathTo: String) throws -> Cid {
         let cCid = makeRustString(from: cid)
-        
         let cRemotePathFrom = makeRustString(from: remotePathFrom)
         let cRemotePathTo = makeRustString(from: remotePathTo)
         let ptr = cp_native(self.blockStoreInterface, cCid,  cRemotePathFrom, cRemotePathTo)
-        
-        
-        
-        
-        
-        
         return try self.consumeRustResult_RustString(ptr)
     }
     
     public func Ls(cid: Cid, remotePath: String) throws -> Data? {
         let cCid = makeRustString(from: cid)
-        
         let cRemotePath = makeRustString(from: remotePath)
         let ptr = ls_native(self.blockStoreInterface, cCid,  cRemotePath)
-        
         let data = try self.consumeRustResult_RustBytes(ptr)
-        
-        
         return data
     }
     
@@ -300,12 +242,6 @@ public class Wnfs {
         let cRemotePathFrom = makeRustString(from: remotePathFrom)
         let cRemotePathTo = makeRustString(from: remotePathTo)
         let ptr = mv_native(self.blockStoreInterface, cCid,  cRemotePathFrom, cRemotePathTo)
-        
-        
-        
-        
-        
-        
         return try self.consumeRustResult_RustString(ptr)
     }
     
@@ -314,7 +250,7 @@ public class Wnfs {
         if !r.ok {
             throw MyError.runtimeError(String(cString:  r.err.str))
         }
-
+        
         if r.result.data == nil {
             throw MyError.runtimeError("nil RustResult bytes ptr")
         }
@@ -333,7 +269,7 @@ public class Wnfs {
         if !r.ok {
             throw MyError.runtimeError(String(cString:  r.err.str))
         }
-
+        
         if r.result.str == nil {
             throw MyError.runtimeError("nil RustResult string ptr")
         }

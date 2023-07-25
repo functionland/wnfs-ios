@@ -20,10 +20,10 @@ let package = Package(
                 dependencies: ["WnfsBindings",]),
             .binaryTarget(
                 name: "WnfsBindings",
-//                 You can use local path for faster development
-                 path: "../wnfs-ios-bindings/build/WnfsBindings.xcframework"),
-//                url: "https://github.com/functionland/wnfs-ios-bindings/releases/download/v0.1.6/swift-bundle.zip",
-//                checksum: "07cd3d130a0db69a054fa631059c165d2c46c878a8a668044d4f06006eb729fe"),
+                //  You can use local path for a faster development
+                //  path: "../wnfs-ios-bindings/build/WnfsBindings.xcframework"),
+               url: "https://github.com/functionland/wnfs-ios-bindings/releases/download/v1.0.0/cocoapods-bundle.zip",
+               checksum: "54fe93527ab3cca6dc5edcac6b82a2c17d3c966138913de92763c4f690ddf753"),
            
             .testTarget(
                 name: "WnfsTests",

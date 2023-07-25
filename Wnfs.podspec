@@ -8,7 +8,7 @@ Pod::Spec.new do |spec|
   spec.homepage     = "http://github.com/functionland/wnfs-swift-package"
   spec.license      = { :type => "MIT", :file => "LICENSE" }
   spec.author             = { "Homayoun Heidarzadeh" => "hhio618@gmail.com" }
-  spec.platform     = :ios, "11.0"
+  spec.platform     = :ios, "13.0"
   spec.source = { :git => "https://github.com/functionland/wnfs-ios.git", :tag => "v#{spec.version}" }
   spec.source_files  = "Sources", "Sources/**/*.{h,m,swift}"
   spec.exclude_files = "Tests/"
