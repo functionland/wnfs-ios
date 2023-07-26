@@ -1,5 +1,5 @@
 Pod::Spec.new do |spec|
-  spec.name         = "WnfsSwift"
+  spec.name         = "Wnfs"
   spec.version      = "1.0.0"
   spec.summary      = "A wrapper around the WNFS swift bindings."
   spec.description  = <<-DESC
