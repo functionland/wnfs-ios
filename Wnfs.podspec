@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "Wnfs"
-  spec.version      = "1.0.0"
+  spec.version      = "1.0.1"
   spec.summary      = "A wrapper around the WNFS swift bindings."
   spec.description  = <<-DESC
   A wrapper around the WNFS swift bindings, supports ios 8.0+.
