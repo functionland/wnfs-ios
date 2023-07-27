@@ -32,29 +32,6 @@ func toData(ptr: UnsafePointer<UInt8>?, size: Int) -> Data? {
     return Data(buffer: buffer)
 }
 
-public class WnfsResult<T>{
-    private var _ok: Bool
-    private var _error: String?
-    private var _result: T
-    public init(ok: Bool, error: String?, result: T) {
-        self._ok = ok
-        self._error = error
-        self._result = result
-    }
-    
-    public func ok() -> Bool {
-        return self._ok
-    }
-    
-    public func error() -> String?{
-        return self._error
-    }
-    
-    public func getResult()  -> T {
-        return self._result
-    }
-}
-
 enum MyError: Error {
     case runtimeError(String)
 }
@@ -134,12 +111,10 @@ public class Wnfs {
         self.blockStoreInterface = BlockStoreInterface(userdata: userdata, put_fn: cPutFn, get_fn: cGetFn, dealloc_after_get: cGetDeallocFn, dealloc_after_put: cPutDeallocFn)
     }
     
-    public func Init(wnfsKey: String) throws -> Cid {
-        let msg = wnfsKey.data(using: .utf8)!
-        let hashed = sha256(data: msg)
+    public func Init(wnfsKey: Data) throws -> Cid {
         var wnfs_key_ptr: UnsafePointer<UInt8>?
         var wnfs_key_size: Int?
-        hashed.withUnsafeBytes { (unsafeBytes) in
+        wnfsKey.withUnsafeBytes { (unsafeBytes) in
             wnfs_key_ptr = unsafeBytes.bindMemory(to: UInt8.self).baseAddress!
             wnfs_key_size = unsafeBytes.count
         }
@@ -147,12 +122,10 @@ public class Wnfs {
         return try self.consumeRustResult_RustString(ptr)
     }
     
-    public  func LoadWithWNFSKey(wnfsKey: String, cid: Cid) throws  {
-        let msg = wnfsKey.data(using: .utf8)!
-        let hashed = sha256(data: msg)
+    public  func LoadWithWNFSKey(wnfsKey: Data, cid: Cid) throws  {
         var wnfs_key_ptr: UnsafePointer<UInt8>?
         var wnfs_key_size: Int?
-        hashed.withUnsafeBytes { (unsafeBytes) in
+        wnfsKey.withUnsafeBytes { (unsafeBytes) in
             wnfs_key_ptr = unsafeBytes.bindMemory(to: UInt8.self).baseAddress!
             wnfs_key_size = unsafeBytes.count
         }

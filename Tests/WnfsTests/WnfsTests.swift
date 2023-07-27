@@ -50,7 +50,7 @@ final class WnfsSwiftTest: XCTestCase {
     
     func testOverall() throws {
         let wnfs = Wnfs(putFn: mockFulaPut, getFn: mockFulaGet)
-        var cid = try wnfs.Init(wnfsKey: "test")
+        var cid = try wnfs.Init(wnfsKey: "test".data(using: .utf8)!)
         
         let data = "hello, world!".data(using: .utf8)!
         cid = try wnfs.WriteFile(cid: cid, remotePath: "/root/file.txt", data: data)
